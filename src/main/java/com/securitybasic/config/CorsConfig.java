@@ -15,7 +15,6 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://127.0.0.1:5200") // Aquí pones la URL de tu frontend
                 .allowedMethods("GET", "POST", "PUT", "DELETE") // Métodos HTTP permitidos
                 .allowedHeaders("Authorization", "Content-Type", "X-Requested-With")
-                //.allowedHeaders("*") // Puedes especificar los encabezados permitidos si no funciona descomentar
                 .allowCredentials(true); // Si es necesario permitir cookies/autenticación
     }
 }

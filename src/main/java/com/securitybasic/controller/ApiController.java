@@ -1,9 +1,11 @@
 package com.securitybasic.controller;
 
-
-import com.securitybasic.model.MyUser;
-import com.securitybasic.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.securitybasic.dto.UserLoginDTO;
+import com.securitybasic.dto.UserRegisterDTO;
+import com.securitybasic.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,35 +15,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class ApiController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public ApiController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    public ApiController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
-    public String hello() {
-        return "Hello, authenticated user!";
+    public ResponseEntity<String> loginUser(@Valid @RequestBody UserLoginDTO userLoginDTO) {
+        try {
+            UserLoginDTO userResponse = authService.loginUser(userLoginDTO);
+            return ResponseEntity.ok("Usuario logueado correctamente. Token: " + userResponse.getUsername());
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Credenciales inválidas");
+        }
     }
-
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody MyUser user) {
-        // Verificar si el usuario ya existe
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return "El nombre de usuario ya está en uso.";
-        }
-
-        // Encriptar la contraseña
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Guardar el usuario en la base de datos
-        userRepository.save(user);
-
-        return "Usuario registrado con éxito.";
+    public ResponseEntity<String> registerUser(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
+        // LLamar al servicio para registar al usuario
+        authService.registerUser(userRegisterDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado con éxito");
     }
-
-
 }
